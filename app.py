@@ -62,16 +62,16 @@ def calculate_starter_score_v4_1(row, pitch_usage, num_pitches_over_15, quantile
 
 csv = st.file_uploader("📂 CSV 파일 업로드 (pitchers vs all.csv)", type="csv")
 
-if csv:
-    df = pd.read_csv(csv)
-    df['normalized_player'] = df['player'].apply(normalize_name)
-    quantiles = df[df['total_pitches'] >= 100].quantile([0.05,0.10,0.25,0.50,0.75,0.90,0.95])
+if csv is not None:
+    try:
+        df = pd.read_csv(csv)
+        df['normalized_player'] = df['player'].apply(normalize_name)
+        quantiles = df[df['total_pitches'] >= 100].quantile([0.05,0.10,0.25,0.50,0.75,0.90,0.95])
 
-    pitcher_name = st.text_input("투수 이름 입력 (예: Spencer Strider)")
-    pitch_input = st.text_area("구종 사용률 입력 (예: 4-Seam:51.1, Slider:32.6)")
+        pitcher_name = st.text_input("투수 이름 입력 (예: Spencer Strider)")
+        pitch_input = st.text_area("구종 사용률 입력 (예: 4-Seam:51.1, Slider:32.6)")
 
-    if st.button("🔍 분석 실행") and pitcher_name and pitch_input:
-        try:
+        if st.button("🔍 분석 실행") and pitcher_name and pitch_input:
             pitch_usage = {k.strip(): float(v.strip()) for k,v in (item.split(":") for item in pitch_input.split(","))}
             num_15 = sum(1 for v in pitch_usage.values() if v >= 15)
             row = df[df['normalized_player'] == normalize_name(pitcher_name)]
@@ -86,5 +86,5 @@ if csv:
                 st.subheader("📋 점수 세부 로그")
                 for log in logs:
                     st.write("-", log)
-        except Exception as e:
-            st.error(f"입력 오류: {e}")
+    except Exception as e:
+        st.error(f"CSV 파일 오류: {e}")
